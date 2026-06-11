@@ -23,9 +23,21 @@
     .toast.show{opacity:1}
     .toast.warn{background:#e65100}
     .toast.error{background:#c62828}
+    .loader-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#f7f7f7;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000}
+    .loader-overlay.hidden{display:none}
+    .loader-bar{width:360px;height:8px;background:#ddd;border-radius:4px;overflow:hidden;margin:16px 0}
+    .loader-fill{height:100%;background:#1a73e8;border-radius:4px;width:0%;transition:width .4s}
+    .loader-text{color:#555;font-size:14px}
+    .loader-sub{color:#999;font-size:12px;margin-top:4px}
   </style>
 </head>
 <body>
+  <div id="loader" class="loader-overlay">
+    <h2>Starting LG Monitor Control</h2>
+    <div class="loader-bar"><div id="loader-fill" class="loader-fill"></div></div>
+    <div id="loader-text" class="loader-text">Connecting to monitor...</div>
+    <div id="loader-sub" class="loader-sub"></div>
+  </div>
   <h1>LG Monitor Control</h1>
   <div class="row">
     <label><input id="advanced" type="checkbox"> Advanced mode</label>
@@ -40,6 +52,7 @@ let monitorId = '';
 let stateCache = {};
 
 async function init() {
+  await waitForCache();
   const res = await fetch('/api/monitors');
   const data = await res.json();
   if (data.monitors && data.monitors.length > 0) {
@@ -47,7 +60,33 @@ async function init() {
     document.querySelector('h1').textContent += ' - ' + monitorId;
   }
   await loadState();
+  document.getElementById('loader').classList.add('hidden');
   await loadControls();
+}
+
+async function waitForCache() {
+  const fill = document.getElementById('loader-fill');
+  const txt = document.getElementById('loader-text');
+  const sub = document.getElementById('loader-sub');
+  for (let i = 0; i < 120; i++) {
+    try {
+      const res = await fetch('/api/cache/status');
+      const s = await res.json();
+      if (s.done) {
+        fill.style.width = '100%';
+        txt.textContent = 'Ready (' + s.read + '/' + s.total + ' codes)';
+        return;
+      }
+      const pct = s.total > 0 ? Math.round(s.read / s.total * 100) : 0;
+      fill.style.width = pct + '%';
+      txt.textContent = 'Reading VCP codes from monitor...';
+      sub.textContent = s.read + ' / ' + s.total + ' (' + pct + '%)';
+    } catch {
+      txt.textContent = 'Waiting for server to start...';
+    }
+    await new Promise(r => setTimeout(r, 1000));
+  }
+  txt.textContent = 'Server did not become ready';
 }
 
 async function loadState() {

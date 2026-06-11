@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, subprocess, time, logging
+import json, subprocess, time, logging, threading
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
@@ -16,6 +16,7 @@ config: dict = {}
 profile: dict = {}
 controls: dict[str, dict] = {}
 state_cache: dict[str, int | None] = {}
+cache_status: dict = {"total": 0, "read": 0, "done": False}
 
 def load_json(p: Path) -> dict:
     return json.loads(p.read_text(encoding="utf-8"))
@@ -28,12 +29,16 @@ def reload_config():
     log.info("Config+profile loaded (%d controls)", len(controls))
 
 def _warm_cache():
+    global cache_status
     cmm = _cmm()
     if not Path(cmm).exists():
         log.warning("ControlMyMonitor not found at %s — skipping cache warm", cmm)
+        cache_status = {"total": 0, "read": 0, "done": True}
         return
     readable = [c for c in profile.get("controls", []) if c["access"] in ("Read Only", "Read+Write")]
-    log.info("Warming cache: reading %d VCP codes from monitor...", len(readable))
+    total = len(readable)
+    cache_status = {"total": total, "read": 0, "done": False}
+    log.info("Warming cache: reading %d VCP codes from monitor...", total)
     ok = 0
     for c in readable:
         code = c["source_key"]
@@ -41,7 +46,13 @@ def _warm_cache():
         state_cache[code] = val
         if val is not None:
             ok += 1
-    log.info("Cache warm complete: %d/%d codes read successfully", ok, len(readable))
+        cache_status["read"] = ok
+    cache_status["done"] = True
+    log.info("Cache warm complete: %d/%d codes read successfully", ok, total)
+
+def _warm_cache_async():
+    t = threading.Thread(target=_warm_cache, daemon=True)
+    t.start()
 
 reload_config()
 
@@ -78,7 +89,11 @@ def _run(cmd: list[str]) -> subprocess.CompletedProcess:
 @app.on_event("startup")
 async def startup():
     reload_config()
-    _warm_cache()
+    _warm_cache_async()
+
+@app.get("/api/cache/status")
+def get_cache_status():
+    return cache_status
 
 @app.get("/api/monitors")
 def get_monitors():

@@ -211,16 +211,24 @@ Poll a watch list of VCP codes and log changes while you navigate the monitor's 
 - Press **Q** to quit and save session JSON
 - Polling interval defaults to 300ms
 
-## Startup Cache
+## Startup & Cache Warm
 
-On startup, the server automatically reads all readable VCP codes from the physical monitor (typically 50-53 out of 57) and caches them in memory. This means:
+On startup, the server immediately binds the port and begins warming the cache in a background thread — reading all readable VCP codes from the physical monitor (typically 50-53 out of 57). This means:
 
-- The UI loads instantly with current values — no spinning or "?" placeholders
+- The port is available within 1-2 seconds (no need to wait for cache)
+- The UI shows a **progress bar** with live `read / total` counts while cache fills
+- Once complete, the UI loads instantly with current values
 - The `/state` endpoint returns cached data without launching ControlMyMonitor per-request
 - Subsequent reads (`GET /vcp/{code}`) and writes (`POST /vcp`) update the cache automatically
 - Pass `?refresh=true` on `/state` to force a live re-read from the monitor
 
-The warm-up takes ~10-20 seconds depending on how quickly ControlMyMonitor responds. The server logs progress: `"Warming cache: reading 53 VCP codes..."`.
+The warm-up takes ~10-20 seconds depending on how quickly ControlMyMonitor responds. Check progress via `GET /api/cache/status`:
+
+```json
+{ "total": 57, "read": 32, "done": false }
+```
+
+The `run-local.ps1` launcher waits for both the port and the cache to be ready before returning.
 
 ## Important Notes
 

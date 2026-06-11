@@ -27,6 +27,23 @@ for ($i = 0; $i -lt $maxRetries; $i++) {
   $conn = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
   if ($conn) {
     Write-Host "Server started on port $port"
+    # Wait for cache warming to complete
+    Write-Host "Waiting for cache warm..."
+    for ($j = 0; $j -lt 30; $j++) {
+      try {
+        $status = Invoke-RestMethod -Uri "http://127.0.0.1:$port/api/cache/status" -ErrorAction Stop
+        if ($status.done) {
+          Write-Host "Cache warm complete: $($status.read)/$($status.total) codes"
+          exit 0
+        }
+        Write-Host "  Cache: $($status.read)/$($status.total) codes"
+      } catch {
+        # server port up but not responding yet, keep waiting
+        Write-Host "  Waiting for server response..."
+      }
+      Start-Sleep 1
+    }
+    Write-Warning "Cache did not complete after 30s - proceeding anyway"
     exit 0
   }
   if ($proc.HasExited) {
