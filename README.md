@@ -117,7 +117,7 @@ Full capability profile — all 57 VCP controls with type, range/enum values, sa
 
 ### `GET /api/monitors/{monitor_id}/state`
 
-Read current values of all readable VCP controls from the physical monitor in a single request.
+Returns cached current values of all readable VCP controls. The cache is populated automatically during server startup (reads all 57 VCP codes before accepting requests). Add `?refresh=true` to force a fresh read from the physical monitor.
 
 ```json
 {
@@ -210,6 +210,17 @@ Poll a watch list of VCP codes and log changes while you navigate the monitor's 
 - Press **M** to add a marker note (e.g., "entered picture menu")
 - Press **Q** to quit and save session JSON
 - Polling interval defaults to 300ms
+
+## Startup Cache
+
+On startup, the server automatically reads all readable VCP codes from the physical monitor (typically 50-53 out of 57) and caches them in memory. This means:
+
+- The UI loads instantly with current values — no spinning or "?" placeholders
+- The `/state` endpoint returns cached data without launching ControlMyMonitor per-request
+- Subsequent reads (`GET /vcp/{code}`) and writes (`POST /vcp`) update the cache automatically
+- Pass `?refresh=true` on `/state` to force a live re-read from the monitor
+
+The warm-up takes ~10-20 seconds depending on how quickly ControlMyMonitor responds. The server logs progress: `"Warming cache: reading 53 VCP codes..."`.
 
 ## Important Notes
 

@@ -15,6 +15,7 @@ log = logging.getLogger("lgmonitor")
 config: dict = {}
 profile: dict = {}
 controls: dict[str, dict] = {}
+state_cache: dict[str, int | None] = {}
 
 def load_json(p: Path) -> dict:
     return json.loads(p.read_text(encoding="utf-8"))
@@ -25,6 +26,22 @@ def reload_config():
     profile = load_json(PROFILE_PATH)
     controls = {c["source_key"]: c for c in profile.get("controls", [])}
     log.info("Config+profile loaded (%d controls)", len(controls))
+
+def _warm_cache():
+    cmm = _cmm()
+    if not Path(cmm).exists():
+        log.warning("ControlMyMonitor not found at %s — skipping cache warm", cmm)
+        return
+    readable = [c for c in profile.get("controls", []) if c["access"] in ("Read Only", "Read+Write")]
+    log.info("Warming cache: reading %d VCP codes from monitor...", len(readable))
+    ok = 0
+    for c in readable:
+        code = c["source_key"]
+        val = _driver_get_vcp(code)
+        state_cache[code] = val
+        if val is not None:
+            ok += 1
+    log.info("Cache warm complete: %d/%d codes read successfully", ok, len(readable))
 
 reload_config()
 
@@ -61,6 +78,7 @@ def _run(cmd: list[str]) -> subprocess.CompletedProcess:
 @app.on_event("startup")
 async def startup():
     reload_config()
+    _warm_cache()
 
 @app.get("/api/monitors")
 def get_monitors():
@@ -83,15 +101,18 @@ def get_capabilities(monitor_id: str):
     return {"monitor": monitor_id, "controls": profile.get("controls", [])}
 
 @app.get("/api/monitors/{monitor_id}/state")
-def get_state(monitor_id: str):
-    results = {}
-    for c in profile.get("controls", []):
-        code = c["source_key"]
-        if c["access"] in ("Read Only", "Read+Write"):
-            val = _driver_get_vcp(code)
-            if val is not None:
-                results[code] = val
-    return {"monitor": monitor_id, "state": results}
+def get_state(monitor_id: str, refresh: bool = False):
+    if refresh:
+        results = {}
+        for c in profile.get("controls", []):
+            code = c["source_key"]
+            if c["access"] in ("Read Only", "Read+Write"):
+                val = _driver_get_vcp(code)
+                if val is not None:
+                    state_cache[code] = val
+                    results[code] = val
+        return {"monitor": monitor_id, "state": results}
+    return {"monitor": monitor_id, "state": {k: v for k, v in state_cache.items() if v is not None}}
 
 @app.get("/api/monitors/{monitor_id}/vcp/{code}")
 def read_vcp(monitor_id: str, code: str):
@@ -104,6 +125,7 @@ def read_vcp(monitor_id: str, code: str):
     val = _driver_get_vcp(code)
     if val is None:
         raise HTTPException(502, f"Failed to read VCP code {code}")
+    state_cache[code] = val
     return {"code": code, "value": val, "label": ctrl["label"]}
 
 @app.post("/api/monitors/{monitor_id}/vcp")
@@ -116,6 +138,7 @@ def write_vcp(monitor_id: str, body: VcpWrite):
         raise HTTPException(400, f"VCP code {code} is not writable ({ctrl['access']})")
     _validate(ctrl, body.value)
     _driver_set_vcp(code, body.value)
+    state_cache[code] = body.value
     verified = None
     if config.get("verify_after_write", False):
         import time as _time

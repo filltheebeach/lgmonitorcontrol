@@ -37,6 +37,7 @@
   <div id="toast" class="toast"></div>
 <script>
 let monitorId = '';
+let stateCache = {};
 
 async function init() {
   const res = await fetch('/api/monitors');
@@ -45,7 +46,15 @@ async function init() {
     monitorId = data.monitors[0].id;
     document.querySelector('h1').textContent += ' - ' + monitorId;
   }
+  await loadState();
   await loadControls();
+}
+
+async function loadState() {
+  if (!monitorId) return;
+  const res = await fetch('/api/monitors/' + encodeURIComponent(monitorId) + '/state');
+  const data = await res.json();
+  stateCache = data.state || {};
 }
 
 async function loadControls() {
@@ -71,6 +80,7 @@ function renderInputSelector(all) {
   root.innerHTML = '';
   if (!inputCtrl) return;
 
+  const currentVal = stateCache['60'];
   const inputs = [
     { value: 15, label: 'HDMI-1', cls: 'hdmi' },
     { value: 16, label: 'HDMI-2', cls: 'hdmi' },
@@ -83,7 +93,7 @@ function renderInputSelector(all) {
   const btnRow = card.querySelector('#input-btns');
   for (const inp of inputs) {
     const btn = document.createElement('button');
-    btn.className = 'input-btn ' + inp.cls;
+    btn.className = 'input-btn ' + inp.cls + (currentVal === inp.value ? ' active' : '');
     btn.textContent = inp.label;
     btn.onclick = async () => {
       btn.disabled = true;
@@ -92,6 +102,7 @@ function renderInputSelector(all) {
       btn.disabled = false;
       btn.textContent = inp.label;
       if (ok) {
+        stateCache['60'] = inp.value;
         document.querySelectorAll('.input-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
       }
@@ -99,15 +110,6 @@ function renderInputSelector(all) {
     btnRow.appendChild(btn);
   }
   root.appendChild(card);
-}
-
-async function getCurrentInput() {
-  try {
-    const res = await fetch('/api/monitors/' + encodeURIComponent(monitorId) + '/vcp/60');
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.value;
-  } catch { return null; }
 }
 
 async function renderControls(controls, total) {
@@ -121,19 +123,20 @@ async function renderControls(controls, total) {
       : c.safe_class === 'manual_only' ? 'warn'
       : c.safe_class === 'experimental' ? 'experimental'
       : c.safe_class === 'blocked' ? 'blocked' : '';
+    const cached = stateCache[c.source_key];
     let body = '';
     if ((c.type === 'range' || c.type === 'range_nonlinear') && c.access !== 'Read Only' && c.access !== 'Write Only') {
       const max = c.maximum_value != null ? c.maximum_value : 100;
+      const cur = cached != null ? cached : 0;
       body = '<div class="row">'
-        + '<input id="i_' + c.source_key + '" type="range" min="0" max="' + max + '" value="0" oninput="document.getElementById(\'v_' + c.source_key + '\').textContent=this.value">'
-        + '<span id="v_' + c.source_key + '">?</span>'
-        + '<button onclick="readAndFillRange(\'' + c.source_key + '\', ' + max + ')">Refresh</button>'
+        + '<input id="i_' + c.source_key + '" type="range" min="0" max="' + max + '" value="' + cur + '" oninput="document.getElementById(\'v_' + c.source_key + '\').textContent=this.value">'
+        + '<span id="v_' + c.source_key + '">' + cur + '</span>'
         + '<button onclick="setVcp(\'' + c.source_key + '\')">Apply</button>'
         + '</div>';
     } else if ((c.type === 'enum' || (c.value_labels && c.value_labels.length > 0)) && c.access !== 'Read Only') {
       body = '<div class="row"><select id="s_' + c.source_key + '">' + vals + '</select><button onclick="setVcp(\'' + c.source_key + '\')">Apply</button></div>';
     } else if (c.access === 'Read Only' || c.type === 'readonly') {
-      body = '<div class="row"><button onclick="readCode(\'' + c.source_key + '\')">Read</button><span id="r_' + c.source_key + '" class="muted"></span></div>';
+      body = '<div class="row"><button onclick="readCode(\'' + c.source_key + '\')">Read</button><span id="r_' + c.source_key + '" class="muted">' + (cached != null ? 'Value: ' + cached : '') + '</span></div>';
     } else {
       body = '<div class="row"><span class="muted">' + c.access + '</span></div>';
     }
@@ -142,23 +145,6 @@ async function renderControls(controls, total) {
       + body;
     root.appendChild(card);
   }
-}
-
-async function readAndFillRange(code, max) {
-  const val = await readCodeRaw(code);
-  if (val != null) {
-    const rng = document.getElementById('i_' + code);
-    const lbl = document.getElementById('v_' + code);
-    if (rng) rng.value = val;
-    if (lbl) lbl.textContent = val;
-  }
-}
-
-async function readCodeRaw(code) {
-  const res = await fetch('/api/monitors/' + encodeURIComponent(monitorId) + '/vcp/' + code);
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.value;
 }
 
 async function setVcp(code, value) {
@@ -174,6 +160,7 @@ async function setVcp(code, value) {
     body: JSON.stringify({ code: code, value: value })
   });
   const data = await res.json();
+  if (data.success) stateCache[code] = value;
   if (code === '60') {
     toast(data.success ? 'Switched to input ' + value : 'Switch failed: ' + (data.error || 'unknown'), data.success ? '' : 'error');
   } else {
@@ -187,6 +174,7 @@ async function readCode(code) {
   const res = await fetch('/api/monitors/' + encodeURIComponent(monitorId) + '/vcp/' + code);
   if (!res.ok) { toast('Read failed', 'error'); return; }
   const data = await res.json();
+  stateCache[code] = data.value;
   const el = document.getElementById('r_' + code);
   if (el) el.textContent = 'Value: ' + data.value;
   toast('Read ' + code + ' = ' + data.value);
