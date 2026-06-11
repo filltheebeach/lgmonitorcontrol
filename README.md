@@ -2,22 +2,26 @@
 
 A local API server and toolchain for controlling an LG HDR WQHD monitor over DDC/CI (via ControlMyMonitor) and LG OnScreen Control CLI (OSCCLI). Includes a capability probe, live OSD change logger, and a web UI.
 
+**Key feature:** Switch between HDMI-1, HDMI-2, and DisplayPort inputs programmatically via the API or one-click buttons in the web UI.
+
 ## Architecture
 
 ```
-probe/probe.py          # CSV export → monitor profile JSON + capability report
-probe/probe.ps1         # PowerShell wrapper for probe.py
+probe/probe.py                    # CSV export → monitor profile JSON + capability report
+probe/probe.ps1                   # PowerShell wrapper for probe.py
 probe/monitor-osd-polling-logger.ps1  # Live OSD change polling logger
 
-server/app.py           # FastAPI server — REST API wrapping ControlMyMonitor + OSCCLI
+server/app.py                     # FastAPI server — REST API wrapping ControlMyMonitor + OSCCLI
 server/monitor-profile.full.json  # Canonical capability model (57 VCP controls)
 
-ui/index.html           # Local web UI for testing controls
+ui/index.html                     # Local web UI with dedicated input selector
 
-windows-service/run-local.ps1  # Quick launcher for the API server
+windows-service/run-local.ps1     # Quick launcher for the API server
 
-config/config.json      # Runtime config (tool paths, monitor string, OSC display ID)
+config/config.json                # Runtime config (tool paths, monitor string, OSC display ID)
 config/config.example.json
+
+capability-report.md              # Auto-generated markdown report from the probe
 ```
 
 ## Requirements
@@ -25,12 +29,14 @@ config/config.example.json
 - Python 3.10+ (venv at `.venv/`)
 - [ControlMyMonitor](https://www.nirsoft.net/utils/control_my_monitor.html) (NirSoft) — DDC/CI VCP read/write
 - LG OnScreen Control (`OSCCLI.exe`) — LG-specific OSC commands
-- Virtual environment with FastAPI + Uvicorn (auto-installed by `run-local.ps1`)
+- Virtual environment with FastAPI + Uvicorn
 
 ## Setup
 
 1. Clone the repo and create the venv:
    ```powershell
+   git clone https://github.com/filltheebeach/lgmonitorcontrol.git
+   cd lgmonitorcontrol
    python -m venv .venv
    .venv\Scripts\Activate.ps1
    ```
@@ -63,6 +69,26 @@ config/config.example.json
 
 5. Open `http://127.0.0.1:8123/` — the server serves the UI directly.
 
+## Input Switching
+
+The most frequently used feature. The web UI shows a dedicated **Input Source** card at the top with buttons for each available input:
+
+- **HDMI-1** (VCP value 15)
+- **HDMI-2** (VCP value 16)
+- **DisplayPort** (VCP value 17)
+
+To switch inputs programmatically:
+
+```bash
+curl -s -X POST http://127.0.0.1:8123/api/monitors/LG%20HDR%20WQHD/vcp \
+  -H 'Content-Type: application/json' \
+  -d '{"code": "60", "value": 15}'
+```
+
+The active input button is highlighted after a successful switch.
+
+**Note:** Switching to an input that the controlling PC is not connected to will make the monitor temporarily unreachable via DDC/CI. The API call will still succeed (it sends the command before the switch takes effect), but subsequent reads/writes will fail until the PC's input is reselected.
+
 ## API Reference
 
 Base URL: `http://127.0.0.1:8123`
@@ -91,7 +117,7 @@ Full capability profile — all 57 VCP controls with type, range/enum values, sa
 
 ### `GET /api/monitors/{monitor_id}/state`
 
-Read current values of all readable VCP controls from the physical monitor.
+Read current values of all readable VCP controls from the physical monitor in a single request.
 
 ```json
 {
@@ -105,18 +131,29 @@ Read current values of all readable VCP controls from the physical monitor.
 }
 ```
 
-### `POST /api/monitors/{monitor_id}/vcp`
+### `GET /api/monitors/{monitor_id}/vcp/{code}`
 
-Write a VCP code value.
+Read a single VCP control value.
 
 ```json
 {
   "code": "10",
-  "value": 75
+  "value": 100,
+  "label": "Brightness"
 }
 ```
 
-Response includes `verified: true/false` if `verify_after_write` is enabled (reads back the value after a configurable delay).
+### `POST /api/monitors/{monitor_id}/vcp`
+
+Write a VCP code value. Returns `verified: true/false` if `verify_after_write` is enabled (reads back the value after a configurable delay).
+
+```json
+// Request
+{ "code": "10", "value": 75 }
+
+// Response
+{ "success": true, "code": "10", "value": 75, "verified": true }
+```
 
 ### `POST /api/monitors/{monitor_id}/osc`
 
@@ -130,6 +167,19 @@ Send an LG OSC CLI command.
 }
 ```
 
+## Web UI
+
+The server serves `ui/index.html` directly at `http://127.0.0.1:8123/`.
+
+- **Input selector** — prominent card at the top with HDMI-1, HDMI-2, DisplayPort buttons
+- Sliders for range controls (brightness, contrast, volume) — with "Refresh" to read current value
+- Dropdowns for enum controls (picture mode, gamma, input select, response time)
+- Read buttons for read-only controls
+- Advanced mode toggle to expose `manual_only` / `experimental` controls
+- Colored pills for safe class visibility
+- Inline toast notifications for write results (green for verified, orange for warning, red for errors)
+- Automatically discovers the monitor ID from `/api/monitors`
+
 ## Probe
 
 The probe converts a ControlMyMonitor CSV export into the canonical `monitor-profile.full.json`:
@@ -140,13 +190,13 @@ The probe converts a ControlMyMonitor CSV export into the canonical `monitor-pro
 
 It auto-detects:
 - **Range** controls (brightness, contrast, volume, etc.)
-- **Enum** controls (picture mode, aspect ratio, response time, etc.) — parses value labels from notes
+- **Enum** controls (picture mode, aspect ratio, response time, input select, etc.) — parses value labels from notes or uses hardcoded MCCS values for well-known codes (e.g., VCP 60 = Input Select)
 - **Read-only** / **Write-only** controls
 - Safe class per VCP code:
   - `safe_read` — read-only informational
-  - `safe_write_restore` — standard writable controls
+  - `safe_write_restore` — standard writable controls (including input select)
   - `experimental` — vendor-specific (six-axis color, black stabilizer, local dimming)
-  - `manual_only` — input select, OSD, controller ID
+  - `manual_only` — OSD, controller ID
   - `blocked` — factory settings lock
 
 ## Live OSD Logger
@@ -161,25 +211,15 @@ Poll a watch list of VCP codes and log changes while you navigate the monitor's 
 - Press **Q** to quit and save session JSON
 - Polling interval defaults to 300ms
 
-## Web UI
-
-The server serves `ui/index.html` directly at `http://127.0.0.1:8123/`.
-
-- Sliders for range controls (brightness, contrast, etc.)
-- Dropdowns for enum controls (picture mode, gamma, etc.)
-- Read buttons for read-only controls
-- Advanced mode toggle to expose `manual_only` / `experimental` controls
-- Colored pills for safe class visibility
-- Inline toast notifications for write results
-- Automatically discovers the monitor ID from `/api/monitors`
-
 ## Important Notes
 
-- **ControlMyMonitor** returns VCP values as the process exit code, not stdout. The driver reads `$LASTEXITCODE` / `returncode` accordingly.
-- **Input switching** (VCP code 60) can make the controlling PC temporarily unable to address the monitor if it switches to a different source. Marked `manual_only` by default.
-- **OSD overlay**: DDC/CI changes generally do NOT trigger the monitor's normal on-screen display. Settings apply silently — the behavior is model-specific.
+- **ControlMyMonitor** returns VCP values as the process exit code, not stdout. The driver reads `stdout.returncode` accordingly. Zero is a valid value (not an error).
+- **Input switching** (VCP code 60): The write command is sent before the physical switch occurs. If you switch away from the PC's input, subsequent DDC/CI commands will fail until the PC's input is reselected (manually or via the last working API call).
+- **OSD overlay**: DDC/CI changes generally do NOT trigger the monitor's normal on-screen display. Settings apply silently — behavior is model-specific.
 - **OSCCLI** exposes only a subset of controls (brightness, contrast, picture mode, gamma, color temp, RGB gains, response time, FreeSync, black stabilizer). The rest are accessed via VCP through ControlMyMonitor.
 - If the server fails to start with `address already in use`, kill the stale process:
   ```powershell
   Get-NetTCPConnection -LocalPort 8123 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
   ```
+- The `run-local.ps1` launcher includes automatic port killing and a 5-attempt retry loop to handle Windows TIME_WAIT delays.
+- Use `[System.IO.Path]::Combine()` for multi-segment paths in PowerShell scripts — `Join-Path` only accepts 2 arguments.
