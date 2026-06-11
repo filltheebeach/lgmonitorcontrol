@@ -1,0 +1,10 @@
+{
+  "control_my_monitor": "C:/Users/fillthee/Downloads/control_my_monitor/ControlMyMonitor.exe",
+  "osc_cli": "C:/Program Files (x86)/LG Electronics/OnScreen Control/bin/OSCCLI.exe",
+  "monitor": "Primary",
+  "osc_display_id": "2",
+  "host": "127.0.0.1",
+  "port": 8123,
+  "verify_after_write": true,
+  "verify_delay_ms": 300
+}

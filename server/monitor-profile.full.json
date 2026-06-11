@@ -1,0 +1,971 @@
+{
+  "monitor": "LG HDR WQHD",
+  "version": "2",
+  "controls": [
+    {
+      "id": "vcp.2",
+      "source": "vcp",
+      "source_key": "2",
+      "label": "New Control Value",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 2,
+      "maximum_value": 2,
+      "value_labels": [
+        {
+          "value": 1,
+          "label": "No new values"
+        },
+        {
+          "value": 2,
+          "label": "New values saved"
+        }
+      ],
+      "notes": "1 = No new values, 2 = New values saved",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.4",
+      "source": "vcp",
+      "source_key": "4",
+      "label": "Restore Factory Defaults",
+      "access": "Write Only",
+      "type": "writeonly",
+      "current_value": null,
+      "maximum_value": 255,
+      "value_labels": [],
+      "notes": "Write 1 or 255 to trigger full reset",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.5",
+      "source": "vcp",
+      "source_key": "5",
+      "label": "Restore Factory Luminance/Contrast",
+      "access": "Write Only",
+      "type": "writeonly",
+      "current_value": null,
+      "maximum_value": 1,
+      "value_labels": [],
+      "notes": "Write 1 to reset Brightness/Contrast",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.6",
+      "source": "vcp",
+      "source_key": "6",
+      "label": "Restore Factory Geometry Defaults",
+      "access": "Write Only",
+      "type": "writeonly",
+      "current_value": null,
+      "maximum_value": 255,
+      "value_labels": [],
+      "notes": "Legacy standard (not typically used on digital connections)",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.8",
+      "source": "vcp",
+      "source_key": "8",
+      "label": "Restore Factory Color Defaults",
+      "access": "Write Only",
+      "type": "writeonly",
+      "current_value": null,
+      "maximum_value": 255,
+      "value_labels": [],
+      "notes": "Write 1 or 255 to reset RGB gains",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.0B",
+      "source": "vcp",
+      "source_key": "0B",
+      "label": "Color Temperature Increment",
+      "access": "Read Only",
+      "type": "readonly",
+      "current_value": 0,
+      "maximum_value": null,
+      "value_labels": [],
+      "notes": "Step size in Kelvin (0 = continuous or fixed profiles)",
+      "safe_class": "safe_read"
+    },
+    {
+      "id": "vcp.0C",
+      "source": "vcp",
+      "source_key": "0C",
+      "label": "Color Temperature Request",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 35,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "Target color temp profile offset formula",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.0E",
+      "source": "vcp",
+      "source_key": "0E",
+      "label": "Clock",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 50,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "Pixel clock tracking alignment",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.10",
+      "source": "vcp",
+      "source_key": "10",
+      "label": "Brightness",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 100,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "Backlight intensity (0–100%)",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.12",
+      "source": "vcp",
+      "source_key": "12",
+      "label": "Contrast",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 70,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "Digital contrast scale (0–100%)",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.14",
+      "source": "vcp",
+      "source_key": "14",
+      "label": "Select Color Preset",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 11,
+      "maximum_value": 11,
+      "value_labels": [],
+      "notes": "Color spaces (e.g., Warm, Cool, Custom, sRGB)",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.15",
+      "source": "vcp",
+      "source_key": "15",
+      "label": "LG Picture Mode Select",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 39,
+      "maximum_value": 255,
+      "value_labels": [
+        {
+          "value": 11,
+          "label": "Custom"
+        },
+        {
+          "value": 1,
+          "label": "Reader"
+        },
+        {
+          "value": 32,
+          "label": "Photo"
+        },
+        {
+          "value": 48,
+          "label": "Cinema"
+        },
+        {
+          "value": 9,
+          "label": "Dark Room"
+        },
+        {
+          "value": 28,
+          "label": "FPS 1"
+        },
+        {
+          "value": 29,
+          "label": "FPS 2"
+        },
+        {
+          "value": 13,
+          "label": "RTS"
+        },
+        {
+          "value": 39,
+          "label": "HDR Effect / Vivid"
+        }
+      ],
+      "notes": "11=Custom, 1=Reader, 32=Photo, 48=Cinema, 9=Dark Room, 28=FPS 1, 29=FPS 2, 13=RTS, 39=HDR Effect / Vivid",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.16",
+      "source": "vcp",
+      "source_key": "16",
+      "label": "Video Gain (Drive): Red",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 50,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "Red channel balance scale",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.18",
+      "source": "vcp",
+      "source_key": "18",
+      "label": "Video Gain (Drive): Green",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 50,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "Green channel balance scale",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.1A",
+      "source": "vcp",
+      "source_key": "1A",
+      "label": "Video Gain (Drive): Blue",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 50,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "Blue channel balance scale",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.1E",
+      "source": "vcp",
+      "source_key": "1E",
+      "label": "Auto Setup",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 0,
+      "maximum_value": 2,
+      "value_labels": [],
+      "notes": "Auto-adjust execution (analog legacy fallback)",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.20",
+      "source": "vcp",
+      "source_key": "20",
+      "label": "Horizontal Position (Phase)",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 0,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "Active display window alignment",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.30",
+      "source": "vcp",
+      "source_key": "30",
+      "label": "Vertical Position (Phase)",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 0,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "Active display window alignment",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.3E",
+      "source": "vcp",
+      "source_key": "3E",
+      "label": "Clock Phase",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 50,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "ADC sampling phase calibration",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.45",
+      "source": "vcp",
+      "source_key": "45",
+      "label": "LG Gamma Selection",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 0,
+      "maximum_value": 255,
+      "value_labels": [
+        {
+          "value": 0,
+          "label": "Gamma 1"
+        },
+        {
+          "value": 1,
+          "label": "Gamma 2"
+        },
+        {
+          "value": 2,
+          "label": "Gamma 3"
+        },
+        {
+          "value": 3,
+          "label": "Gamma 4"
+        }
+      ],
+      "notes": "0=Gamma 1, 1=Gamma 2, 2=Gamma 3, 3=Gamma 4",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.4D",
+      "source": "vcp",
+      "source_key": "4D",
+      "label": "LG Six-Axis Color: Red Hue",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 35,
+      "maximum_value": 65535,
+      "value_labels": [],
+      "notes": "Custom color component tuning balance",
+      "safe_class": "experimental"
+    },
+    {
+      "id": "vcp.4E",
+      "source": "vcp",
+      "source_key": "4E",
+      "label": "LG Six-Axis Color: Green Hue",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 16384,
+      "maximum_value": 65535,
+      "value_labels": [],
+      "notes": "Custom color component tuning balance",
+      "safe_class": "experimental"
+    },
+    {
+      "id": "vcp.4F",
+      "source": "vcp",
+      "source_key": "4F",
+      "label": "LG Six-Axis Color: Blue Hue",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 6658,
+      "maximum_value": 65535,
+      "value_labels": [],
+      "notes": "Custom color component tuning balance",
+      "safe_class": "experimental"
+    },
+    {
+      "id": "vcp.52",
+      "source": "vcp",
+      "source_key": "52",
+      "label": "Active Control",
+      "access": "Read Only",
+      "type": "readonly",
+      "current_value": 0,
+      "maximum_value": null,
+      "value_labels": [],
+      "notes": "Dynamic image processor query status",
+      "safe_class": "safe_read"
+    },
+    {
+      "id": "vcp.60",
+      "source": "vcp",
+      "source_key": "60",
+      "label": "Input Select",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 0,
+      "maximum_value": 18,
+      "value_labels": [
+        {
+          "value": 1,
+          "label": "VGA-1"
+        },
+        {
+          "value": 2,
+          "label": "VGA-2"
+        },
+        {
+          "value": 3,
+          "label": "DVI-1"
+        },
+        {
+          "value": 4,
+          "label": "DVI-2"
+        },
+        {
+          "value": 15,
+          "label": "HDMI-1"
+        },
+        {
+          "value": 16,
+          "label": "HDMI-2"
+        },
+        {
+          "value": 17,
+          "label": "DisplayPort-1"
+        },
+        {
+          "value": 18,
+          "label": "USB-C"
+        }
+      ],
+      "notes": "Video input control selector",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.62",
+      "source": "vcp",
+      "source_key": "62",
+      "label": "Audio: Speaker Volume",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 18,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "Hardware internal amplifier level",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.6C",
+      "source": "vcp",
+      "source_key": "6C",
+      "label": "Video Black Level: Red",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 128,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "Base black floor compensation offset",
+      "safe_class": "experimental"
+    },
+    {
+      "id": "vcp.6E",
+      "source": "vcp",
+      "source_key": "6E",
+      "label": "Video Black Level: Green",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 128,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "Base black floor compensation offset",
+      "safe_class": "experimental"
+    },
+    {
+      "id": "vcp.70",
+      "source": "vcp",
+      "source_key": "70",
+      "label": "Video Black Level: Blue",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 128,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "Base black floor compensation offset",
+      "safe_class": "experimental"
+    },
+    {
+      "id": "vcp.87",
+      "source": "vcp",
+      "source_key": "87",
+      "label": "Sharpness",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 60,
+      "maximum_value": 100,
+      "value_labels": [],
+      "notes": "Edge enhancement pixel filter scale",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.8D",
+      "source": "vcp",
+      "source_key": "8D",
+      "label": "Audio Mute / Screen Blank",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 2,
+      "maximum_value": 100,
+      "value_labels": [
+        {
+          "value": 1,
+          "label": "Mute/Blank Off"
+        },
+        {
+          "value": 2,
+          "label": "Mute Audio Only"
+        }
+      ],
+      "notes": "1=Mute/Blank Off, 2=Mute Audio Only",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.AC",
+      "source": "vcp",
+      "source_key": "AC",
+      "label": "Horizontal Frequency",
+      "access": "Read Only",
+      "type": "readonly",
+      "current_value": 8164,
+      "maximum_value": null,
+      "value_labels": [],
+      "notes": "Direct physical signal line clock feedback value",
+      "safe_class": "safe_read"
+    },
+    {
+      "id": "vcp.B6",
+      "source": "vcp",
+      "source_key": "B6",
+      "label": "Display Technology Type",
+      "access": "Read Only",
+      "type": "readonly",
+      "current_value": 3,
+      "maximum_value": null,
+      "value_labels": [],
+      "notes": "3=TFT Active Matrix LCD",
+      "safe_class": "safe_read"
+    },
+    {
+      "id": "vcp.C0",
+      "source": "vcp",
+      "source_key": "C0",
+      "label": "Display Usage Time",
+      "access": "Read Only",
+      "type": "readonly",
+      "current_value": 6159,
+      "maximum_value": null,
+      "value_labels": [],
+      "notes": "Cumulative runtime odometer in hours",
+      "safe_class": "safe_read"
+    },
+    {
+      "id": "vcp.C6",
+      "source": "vcp",
+      "source_key": "C6",
+      "label": "Application Enable Key",
+      "access": "Read Only",
+      "type": "readonly",
+      "current_value": 104,
+      "maximum_value": null,
+      "value_labels": [],
+      "notes": "Handshake status register flag",
+      "safe_class": "safe_read"
+    },
+    {
+      "id": "vcp.C8",
+      "source": "vcp",
+      "source_key": "C8",
+      "label": "Display Controller ID",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 9,
+      "maximum_value": 255,
+      "value_labels": [],
+      "notes": "Inner scaler chipset identification",
+      "safe_class": "manual_only"
+    },
+    {
+      "id": "vcp.C9",
+      "source": "vcp",
+      "source_key": "C9",
+      "label": "Display Firmware Level",
+      "access": "Read Only",
+      "type": "readonly",
+      "current_value": 777,
+      "maximum_value": null,
+      "value_labels": [],
+      "notes": "Firmware revision tracking code representation",
+      "safe_class": "safe_read"
+    },
+    {
+      "id": "vcp.CA",
+      "source": "vcp",
+      "source_key": "CA",
+      "label": "OSD",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 2,
+      "maximum_value": 2,
+      "value_labels": [
+        {
+          "value": 1,
+          "label": "Disabled"
+        },
+        {
+          "value": 2,
+          "label": "Enabled (Menu state)"
+        }
+      ],
+      "notes": "1=Disabled, 2=Enabled (Menu state)",
+      "safe_class": "manual_only"
+    },
+    {
+      "id": "vcp.CC",
+      "source": "vcp",
+      "source_key": "CC",
+      "label": "OSD Language",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 0,
+      "maximum_value": 16,
+      "value_labels": [
+        {
+          "value": 1,
+          "label": "German"
+        }
+      ],
+      "notes": "Language indexes map (0=English, 1=German, etc.)",
+      "safe_class": "manual_only"
+    },
+    {
+      "id": "vcp.D6",
+      "source": "vcp",
+      "source_key": "D6",
+      "label": "Power Mode",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 1,
+      "maximum_value": 5,
+      "value_labels": [
+        {
+          "value": 1,
+          "label": "On"
+        },
+        {
+          "value": 4,
+          "label": "Standby/Suspend"
+        },
+        {
+          "value": 5,
+          "label": "Off"
+        }
+      ],
+      "notes": "1=On, 4=Standby/Suspend, 5=Off",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.DF",
+      "source": "vcp",
+      "source_key": "DF",
+      "label": "VCP Version",
+      "access": "Read Only",
+      "type": "readonly",
+      "current_value": 513,
+      "maximum_value": null,
+      "value_labels": [],
+      "notes": "MCCS Standard baseline (513 hex equals version 2.1)",
+      "safe_class": "safe_read"
+    },
+    {
+      "id": "vcp.E4",
+      "source": "vcp",
+      "source_key": "E4",
+      "label": "LG Black Stabilizer",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 0,
+      "maximum_value": 255,
+      "value_labels": [],
+      "notes": "Dynamic dark-scene contrast lifting parameter",
+      "safe_class": "experimental"
+    },
+    {
+      "id": "vcp.E7",
+      "source": "vcp",
+      "source_key": "E7",
+      "label": "LG Six-Axis Color: Cyan Hue",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 0,
+      "maximum_value": 65535,
+      "value_labels": [],
+      "notes": "Custom color component tuning balance",
+      "safe_class": "experimental"
+    },
+    {
+      "id": "vcp.E8",
+      "source": "vcp",
+      "source_key": "E8",
+      "label": "LG Six-Axis Color: Magenta Hue",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 0,
+      "maximum_value": 255,
+      "value_labels": [],
+      "notes": "Custom color component tuning balance",
+      "safe_class": "experimental"
+    },
+    {
+      "id": "vcp.E9",
+      "source": "vcp",
+      "source_key": "E9",
+      "label": "LG Six-Axis Color: Yellow Hue",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 178,
+      "maximum_value": 255,
+      "value_labels": [],
+      "notes": "Custom color component tuning balance",
+      "safe_class": "experimental"
+    },
+    {
+      "id": "vcp.EA",
+      "source": "vcp",
+      "source_key": "EA",
+      "label": "LG Six-Axis Color: Red Saturation",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 0,
+      "maximum_value": 255,
+      "value_labels": [],
+      "notes": "Custom color component tuning saturation",
+      "safe_class": "experimental"
+    },
+    {
+      "id": "vcp.EB",
+      "source": "vcp",
+      "source_key": "EB",
+      "label": "LG DFC (Digital Fine Contrast)",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 0,
+      "maximum_value": 1,
+      "value_labels": [
+        {
+          "value": 0,
+          "label": "Off"
+        },
+        {
+          "value": 1,
+          "label": "On"
+        }
+      ],
+      "notes": "0=Off, 1=On",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.EF",
+      "source": "vcp",
+      "source_key": "EF",
+      "label": "LG Six-Axis Color: Green Saturation",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 0,
+      "maximum_value": 65535,
+      "value_labels": [],
+      "notes": "Custom color component tuning saturation",
+      "safe_class": "experimental"
+    },
+    {
+      "id": "vcp.F4",
+      "source": "vcp",
+      "source_key": "F4",
+      "label": "LG Display Port Version Select",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 6,
+      "maximum_value": 65535,
+      "value_labels": [],
+      "notes": "Scaler bus lane constraints config",
+      "safe_class": "manual_only"
+    },
+    {
+      "id": "vcp.F5",
+      "source": "vcp",
+      "source_key": "F5",
+      "label": "LG Aspect Ratio Policy",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 1,
+      "maximum_value": 255,
+      "value_labels": [
+        {
+          "value": 1,
+          "label": "Full Wide"
+        },
+        {
+          "value": 2,
+          "label": "Original"
+        },
+        {
+          "value": 3,
+          "label": "Just Scan"
+        }
+      ],
+      "notes": "1=Full Wide, 2=Original, 3=Just Scan",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.F6",
+      "source": "vcp",
+      "source_key": "F6",
+      "label": "LG Smart Energy Saving",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 0,
+      "maximum_value": 255,
+      "value_labels": [
+        {
+          "value": 0,
+          "label": "Off"
+        },
+        {
+          "value": 1,
+          "label": "Low"
+        },
+        {
+          "value": 2,
+          "label": "High"
+        }
+      ],
+      "notes": "0=Off, 1=Low, 2=High",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.F7",
+      "source": "vcp",
+      "source_key": "F7",
+      "label": "LG Response Time (Overdrive)",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 2,
+      "maximum_value": 255,
+      "value_labels": [
+        {
+          "value": 0,
+          "label": "Off"
+        },
+        {
+          "value": 1,
+          "label": "Normal"
+        },
+        {
+          "value": 2,
+          "label": "Fast"
+        },
+        {
+          "value": 3,
+          "label": "Faster"
+        }
+      ],
+      "notes": "0=Off, 1=Normal, 2=Fast, 3=Faster",
+      "safe_class": "safe_write_restore"
+    },
+    {
+      "id": "vcp.F8",
+      "source": "vcp",
+      "source_key": "F8",
+      "label": "LG Local Dimming Mode",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 1,
+      "maximum_value": 255,
+      "value_labels": [
+        {
+          "value": 0,
+          "label": "Off"
+        },
+        {
+          "value": 1,
+          "label": "Auto"
+        },
+        {
+          "value": 2,
+          "label": "On (If supported by panel)"
+        }
+      ],
+      "notes": "0=Off, 1=Auto, 2=On (If supported by panel)",
+      "safe_class": "experimental"
+    },
+    {
+      "id": "vcp.F9",
+      "source": "vcp",
+      "source_key": "F9",
+      "label": "LG Crosshair Feature",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 50,
+      "maximum_value": 255,
+      "value_labels": [],
+      "notes": "OSD Game Assist target overlaid graphic index",
+      "safe_class": "experimental"
+    },
+    {
+      "id": "vcp.FA",
+      "source": "vcp",
+      "source_key": "FA",
+      "label": "LG Factory Settings Menu Lock",
+      "access": "Read+Write",
+      "type": "range",
+      "current_value": 255,
+      "maximum_value": 255,
+      "value_labels": [],
+      "notes": "Service architecture block override flag",
+      "safe_class": "blocked"
+    },
+    {
+      "id": "vcp.FB",
+      "source": "vcp",
+      "source_key": "FB",
+      "label": "LG Audio Source Route",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 1,
+      "maximum_value": 65535,
+      "value_labels": [
+        {
+          "value": 1,
+          "label": "Main Input Stream"
+        },
+        {
+          "value": 2,
+          "label": "Aux Loopback Route"
+        }
+      ],
+      "notes": "1=Main Input Stream, 2=Aux Loopback Route",
+      "safe_class": "manual_only"
+    },
+    {
+      "id": "vcp.FE",
+      "source": "vcp",
+      "source_key": "FE",
+      "label": "LG Power LED Indicator",
+      "access": "Read+Write",
+      "type": "enum",
+      "current_value": 16,
+      "maximum_value": 255,
+      "value_labels": [
+        {
+          "value": 16,
+          "label": "On)"
+        }
+      ],
+      "notes": "Standby front jewel light toggle status (0=Off, 16=On)",
+      "safe_class": "safe_write_restore"
+    }
+  ],
+  "approved_first_controls": [
+    "10",
+    "12",
+    "14",
+    "16",
+    "18",
+    "1A",
+    "60",
+    "62",
+    "E4",
+    "EB",
+    "F7"
+  ]
+}

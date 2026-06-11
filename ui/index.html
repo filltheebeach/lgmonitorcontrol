@@ -1,0 +1,205 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>LG Monitor Control</title>
+  <style>
+    body{font-family:Arial,sans-serif;max-width:980px;margin:24px auto;padding:0 16px;background:#f7f7f7;color:#222}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0}
+    .card{background:white;border:1px solid #ddd;border-radius:10px;padding:14px;margin:12px 0}
+    .card.input-card{background:#e3f2fd;border-color:#90caf9}
+    .input-header{font-size:16px;font-weight:700;margin-bottom:8px}
+    .input-btn{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600;min-width:120px}
+    .input-btn:hover{filter:brightness(0.9)}
+    .input-btn.active{outline:3px solid #1a73e8;outline-offset:2px}
+    .input-btn.hdmi{background:#4caf50;color:white}
+    .input-btn.dp{background:#2196f3;color:white}
+    .muted{color:#666}.pill{display:inline-block;padding:2px 8px;border-radius:999px;background:#eee;font-size:12px;margin-left:8px}
+    .pill.safe{background:#c8e6c9}.pill.warn{background:#ffe0b2}.pill.caution{background:#ffcdd2}
+    .pill.blocked{background:#ef9a9a}.pill.experimental{background:#e1bee7}
+    button,input,select{font:inherit;padding:8px}
+    input[type=range]{width:240px}
+    .toast{position:fixed;bottom:24px;right:24px;background:#323232;color:white;padding:12px 24px;border-radius:8px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+    .toast.show{opacity:1}
+    .toast.warn{background:#e65100}
+    .toast.error{background:#c62828}
+  </style>
+</head>
+<body>
+  <h1>LG Monitor Control</h1>
+  <div class="row">
+    <label><input id="advanced" type="checkbox"> Advanced mode</label>
+    <button onclick="loadControls()">Reload</button>
+    <span id="status" class="muted"></span>
+  </div>
+  <div id="input-selector"></div>
+  <div id="controls"></div>
+  <div id="toast" class="toast"></div>
+<script>
+let monitorId = '';
+
+async function init() {
+  const res = await fetch('/api/monitors');
+  const data = await res.json();
+  if (data.monitors && data.monitors.length > 0) {
+    monitorId = data.monitors[0].id;
+    document.querySelector('h1').textContent += ' - ' + monitorId;
+  }
+  await loadControls();
+}
+
+async function loadControls() {
+  if (!monitorId) return;
+  const res = await fetch('/api/monitors/' + encodeURIComponent(monitorId) + '/capabilities');
+  const data = await res.json();
+  const all = data.controls || [];
+  const advanced = document.getElementById('advanced').checked;
+  const filtered = all.filter(c => {
+    if (c.safe_class === 'blocked') return false;
+    if (!advanced && (c.safe_class === 'manual_only' || c.safe_class === 'experimental')) return false;
+    return true;
+  });
+
+  renderInputSelector(all);
+  renderControls(filtered, all.length);
+  document.getElementById('status').textContent = 'Loaded ' + filtered.length + ' / ' + all.length + ' controls';
+}
+
+function renderInputSelector(all) {
+  const inputCtrl = all.find(c => c.source_key === '60');
+  const root = document.getElementById('input-selector');
+  root.innerHTML = '';
+  if (!inputCtrl) return;
+
+  const inputs = [
+    { value: 15, label: 'HDMI-1', cls: 'hdmi' },
+    { value: 16, label: 'HDMI-2', cls: 'hdmi' },
+    { value: 17, label: 'DisplayPort', cls: 'dp' },
+  ];
+
+  const card = document.createElement('div');
+  card.className = 'card input-card';
+  card.innerHTML = '<div class="input-header">Input Source</div><div class="row" id="input-btns"></div>';
+  const btnRow = card.querySelector('#input-btns');
+  for (const inp of inputs) {
+    const btn = document.createElement('button');
+    btn.className = 'input-btn ' + inp.cls;
+    btn.textContent = inp.label;
+    btn.onclick = async () => {
+      btn.disabled = true;
+      btn.textContent = 'Switching...';
+      const ok = await setVcp('60', inp.value);
+      btn.disabled = false;
+      btn.textContent = inp.label;
+      if (ok) {
+        document.querySelectorAll('.input-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+    };
+    btnRow.appendChild(btn);
+  }
+  root.appendChild(card);
+}
+
+async function getCurrentInput() {
+  try {
+    const res = await fetch('/api/monitors/' + encodeURIComponent(monitorId) + '/vcp/60');
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.value;
+  } catch { return null; }
+}
+
+async function renderControls(controls, total) {
+  const root = document.getElementById('controls');
+  root.innerHTML = '';
+  for (const c of controls) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    const vals = (c.value_labels || []).map(v => '<option value="' + v.value + '">' + v.value + ' = ' + v.label + '</option>').join('');
+    const pillClass = c.safe_class === 'safe_read' || c.safe_class === 'safe_write_restore' ? 'safe'
+      : c.safe_class === 'manual_only' ? 'warn'
+      : c.safe_class === 'experimental' ? 'experimental'
+      : c.safe_class === 'blocked' ? 'blocked' : '';
+    let body = '';
+    if ((c.type === 'range' || c.type === 'range_nonlinear') && c.access !== 'Read Only' && c.access !== 'Write Only') {
+      const max = c.maximum_value != null ? c.maximum_value : 100;
+      body = '<div class="row">'
+        + '<input id="i_' + c.source_key + '" type="range" min="0" max="' + max + '" value="0" oninput="document.getElementById(\'v_' + c.source_key + '\').textContent=this.value">'
+        + '<span id="v_' + c.source_key + '">?</span>'
+        + '<button onclick="readAndFillRange(\'' + c.source_key + '\', ' + max + ')">Refresh</button>'
+        + '<button onclick="setVcp(\'' + c.source_key + '\')">Apply</button>'
+        + '</div>';
+    } else if ((c.type === 'enum' || (c.value_labels && c.value_labels.length > 0)) && c.access !== 'Read Only') {
+      body = '<div class="row"><select id="s_' + c.source_key + '">' + vals + '</select><button onclick="setVcp(\'' + c.source_key + '\')">Apply</button></div>';
+    } else if (c.access === 'Read Only' || c.type === 'readonly') {
+      body = '<div class="row"><button onclick="readCode(\'' + c.source_key + '\')">Read</button><span id="r_' + c.source_key + '" class="muted"></span></div>';
+    } else {
+      body = '<div class="row"><span class="muted">' + c.access + '</span></div>';
+    }
+    card.innerHTML = '<div><strong>' + c.source_key + '</strong> - ' + c.label + '<span class="pill ' + pillClass + '">' + c.safe_class + '</span></div>'
+      + '<div class="muted">' + (c.notes || '') + '</div>'
+      + body;
+    root.appendChild(card);
+  }
+}
+
+async function readAndFillRange(code, max) {
+  const val = await readCodeRaw(code);
+  if (val != null) {
+    const rng = document.getElementById('i_' + code);
+    const lbl = document.getElementById('v_' + code);
+    if (rng) rng.value = val;
+    if (lbl) lbl.textContent = val;
+  }
+}
+
+async function readCodeRaw(code) {
+  const res = await fetch('/api/monitors/' + encodeURIComponent(monitorId) + '/vcp/' + code);
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.value;
+}
+
+async function setVcp(code, value) {
+  if (value == null) {
+    const sel = document.getElementById('s_' + code);
+    const rng = document.getElementById('i_' + code);
+    value = sel ? parseInt(sel.value, 10) : rng ? parseInt(rng.value, 10) : null;
+    if (value == null) return;
+  }
+  const res = await fetch('/api/monitors/' + encodeURIComponent(monitorId) + '/vcp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: code, value: value })
+  });
+  const data = await res.json();
+  if (code === '60') {
+    toast(data.success ? 'Switched to input ' + value : 'Switch failed: ' + (data.error || 'unknown'), data.success ? '' : 'error');
+  } else {
+    toast(data.verified === true ? 'Verified: ' + code + ' = ' + value
+      : data.error || (data.success ? 'Set ' + code + ' = ' + value : 'Error ' + (data.detail || JSON.stringify(data))), '');
+  }
+  return data.success;
+}
+
+async function readCode(code) {
+  const res = await fetch('/api/monitors/' + encodeURIComponent(monitorId) + '/vcp/' + code);
+  if (!res.ok) { toast('Read failed', 'error'); return; }
+  const data = await res.json();
+  const el = document.getElementById('r_' + code);
+  if (el) el.textContent = 'Value: ' + data.value;
+  toast('Read ' + code + ' = ' + data.value);
+}
+
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => { el.className = 'toast'; }, 4000);
+}
+
+init();
+</script>
+</body>
+</html>

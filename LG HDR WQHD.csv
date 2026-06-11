@@ -1,0 +1,58 @@
+VCP Code,VCP Code Name,Read-Write,Current Value,Maximum Value,Possible Values / Meaning
+2,New Control Value,Read+Write,2,2,"1 = No new values, 2 = New values saved"
+4,Restore Factory Defaults,Write Only,,255,Write 1 or 255 to trigger full reset
+5,Restore Factory Luminance/Contrast,Write Only,,1,Write 1 to reset Brightness/Contrast
+6,Restore Factory Geometry Defaults,Write Only,,255,Legacy standard (not typically used on digital connections)
+8,Restore Factory Color Defaults,Write Only,,255,Write 1 or 255 to reset RGB gains
+0B,Color Temperature Increment,Read Only,0,,Step size in Kelvin (0 = continuous or fixed profiles)
+0C,Color Temperature Request,Read+Write,35,100,Target color temp profile offset formula
+0E,Clock,Read+Write,50,100,Pixel clock tracking alignment
+10,Brightness,Read+Write,100,100,Backlight intensity (0–100%)
+12,Contrast,Read+Write,70,100,Digital contrast scale (0–100%)
+14,Select Color Preset,Read+Write,11,11,"Color spaces (e.g., Warm, Cool, Custom, sRGB)"
+15,LG Picture Mode Select,Read+Write,39,255,"11=Custom, 1=Reader, 32=Photo, 48=Cinema, 9=Dark Room, 28=FPS 1, 29=FPS 2, 13=RTS, 39=HDR Effect / Vivid"
+16,Video Gain (Drive): Red,Read+Write,50,100,Red channel balance scale
+18,Video Gain (Drive): Green,Read+Write,50,100,Green channel balance scale
+1A,Video Gain (Drive): Blue,Read+Write,50,100,Blue channel balance scale
+1E,Auto Setup,Read+Write,0,2,Auto-adjust execution (analog legacy fallback)
+20,Horizontal Position (Phase),Read+Write,0,100,Active display window alignment
+30,Vertical Position (Phase),Read+Write,0,100,Active display window alignment
+3E,Clock Phase,Read+Write,50,100,ADC sampling phase calibration
+45,LG Gamma Selection,Read+Write,0,255,"0=Gamma 1, 1=Gamma 2, 2=Gamma 3, 3=Gamma 4"
+4D,LG Six-Axis Color: Red Hue,Read+Write,35,65535,Custom color component tuning balance
+4E,LG Six-Axis Color: Green Hue,Read+Write,16384,65535,Custom color component tuning balance
+4F,LG Six-Axis Color: Blue Hue,Read+Write,6658,65535,Custom color component tuning balance
+52,Active Control,Read Only,0,,Dynamic image processor query status
+60,Input Select,Read+Write,0,18,Video input control selector
+62,Audio: Speaker Volume,Read+Write,18,100,Hardware internal amplifier level
+6C,Video Black Level: Red,Read+Write,128,100,Base black floor compensation offset
+6E,Video Black Level: Green,Read+Write,128,100,Base black floor compensation offset
+70,Video Black Level: Blue,Read+Write,128,100,Base black floor compensation offset
+87,Sharpness,Read+Write,60,100,Edge enhancement pixel filter scale
+8D,Audio Mute / Screen Blank,Read+Write,2,100,"1=Mute/Blank Off, 2=Mute Audio Only"
+AC,Horizontal Frequency,Read Only,8164,,Direct physical signal line clock feedback value
+B6,Display Technology Type,Read Only,3,,3=TFT Active Matrix LCD
+C0,Display Usage Time,Read Only,6159,,Cumulative runtime odometer in hours
+C6,Application Enable Key,Read Only,104,,Handshake status register flag
+C8,Display Controller ID,Read+Write,9,255,Inner scaler chipset identification
+C9,Display Firmware Level,Read Only,777,,Firmware revision tracking code representation
+CA,OSD,Read+Write,2,2,"1=Disabled, 2=Enabled (Menu state)"
+CC,OSD Language,Read+Write,0,16,"Language indexes map (0=English, 1=German, etc.)"
+D6,Power Mode,Read+Write,1,5,"1=On, 4=Standby/Suspend, 5=Off"
+DF,VCP Version,Read Only,513,,MCCS Standard baseline (513 hex equals version 2.1)
+E4,LG Black Stabilizer,Read+Write,0,255,Dynamic dark-scene contrast lifting parameter
+E7,LG Six-Axis Color: Cyan Hue,Read+Write,0,65535,Custom color component tuning balance
+E8,LG Six-Axis Color: Magenta Hue,Read+Write,0,255,Custom color component tuning balance
+E9,LG Six-Axis Color: Yellow Hue,Read+Write,178,255,Custom color component tuning balance
+EA,LG Six-Axis Color: Red Saturation,Read+Write,0,255,Custom color component tuning saturation
+EB,LG DFC (Digital Fine Contrast),Read+Write,0,1,"0=Off, 1=On"
+EF,LG Six-Axis Color: Green Saturation,Read+Write,0,65535,Custom color component tuning saturation
+F4,LG Display Port Version Select,Read+Write,6,65535,Scaler bus lane constraints config
+F5,LG Aspect Ratio Policy,Read+Write,1,255,"1=Full Wide, 2=Original, 3=Just Scan"
+F6,LG Smart Energy Saving,Read+Write,0,255,"0=Off, 1=Low, 2=High"
+F7,LG Response Time (Overdrive),Read+Write,2,255,"0=Off, 1=Normal, 2=Fast, 3=Faster"
+F8,LG Local Dimming Mode,Read+Write,1,255,"0=Off, 1=Auto, 2=On (If supported by panel)"
+F9,LG Crosshair Feature,Read+Write,50,255,OSD Game Assist target overlaid graphic index
+FA,LG Factory Settings Menu Lock,Read+Write,255,255,Service architecture block override flag
+FB,LG Audio Source Route,Read+Write,1,65535,"1=Main Input Stream, 2=Aux Loopback Route"
+FE,LG Power LED Indicator,Read+Write,16,255,"Standby front jewel light toggle status (0=Off, 16=On)"
